@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>류제's 오라클 카드 리딩</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Google Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      /* 네비 클릭했을 때 부드럽게 스크롤 */
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Serif KR", serif;
+      background: linear-gradient(180deg, #faf5ff, #ffffff);
+      color: #222;
+	user-select: none;      /* ✅ 텍스트 드래그 금지 */
+    }
+
+/* 이미지 드래그 방지 */
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+    .page {
+      max-width: 1100px; /* 전체 콘텐츠 폭 */
+      margin: 0 auto;    /* 가운데 정렬 */
+      padding: 24px 24px 40px;
+    }
+
+    /* 상단 브랜드 헤더 */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: #a05aff;
+      margin-left: 4px;
+    }
+
+.btn.active {
+  background: #a00ec0;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(160, 12, 192, 0.45);
+}
+
+.top-divider {
+  height: 1px;
+  margin: 10px 0 24px;
+  background: linear-gradient(90deg, transparent, #d020f0, transparent);
+  opacity: 0.45;
+}
+
+    .topbar nav a {
+      margin-left: 20px;
+      font-size: 14px;
+      color: #666;
+      text-decoration: none;
+    }
+
+    .topbar nav a:hover {
+      color: #a05aff;
+    }
+
+    h1 {
+      margin: 16px 0 4px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      margin-bottom: 24px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #d020f0;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn.secondary {
+      background: #ffffff;
+      color: #d020f0;
+      border: 1px solid #d020f0;
+    }
+
+    .btn.active {
+      background: #a00ec0;
+      color: #fff;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .status-line {
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #555;
+      min-height: 20px;
+    }
+
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 32px;
+      margin-top: 12px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+    }
+
+    .card-image-wrapper {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #eee;
+
+      /* 카드 비율 통일 */
+      aspect-ratio: 3 / 4;
+      width: 100%;
+
+      /* 카드 그림자 */
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover .card-image-wrapper {
+      box-shadow: 0 16px 30px rgba(0, 0, 0, 0.24);
+    }
+
+    .card-image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.76);
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .card:hover .card-overlay {
+      opacity: 1;
+    }
+
+    .card-overlay-inner {
+      max-height: 100%;
+      overflow-y: auto;
+      width: 100%;
+      line-height: 1.6;
+      padding: 8px 0;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    /* 👉 키워드 연보라색 */
+    .card-keyword {
+      font-size: 14px;
+      color: #888;
+      font-weight: 500;
+    }
+
+    .card-position {
+      font-size: 11px;
+      color: #a05aff;
+      margin-top: 2px;
+padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(160, 90, 255, 0.08);
+  display: inline-block;
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 40px 0 0;
+      font-size: 13px;
+      color: #888;
+    }
+
+    /* 모달(카드 상세 팝업) */
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+      z-index: 1000;
+    }
+
+    .modal.show {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+    }
+
+    .modal-panel {
+      position: relative;
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px 22px 24px;
+      max-width: 560px;
+      width: 90%;
+      max-height: 90vh;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-image-wrapper {
+      border-radius: 14px;
+      overflow: hidden;
+      aspect-ratio: 3/4;
+      background: #eee;
+    }
+
+    .modal-image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .modal-keyword {
+      font-size: 14px;
+      color: #888;
+    }
+
+    .modal-position {
+      font-size: 12px;
+      color: #a05aff;
+    }
+
+    .modal-body {
+      font-size: 14px;
+      color: #333;
+      line-height: 1.8;
+      margin-top: 4px;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      position: absolute;
+      right: 14px;
+      top: 10px;
+      border: none;
+      background: transparent;
+      font-size: 22px;
+      cursor: pointer;
+      color: #777;
+    }
+
+    .modal-close:hover {
+      color: #333;
+    }
+
+    @media (max-width: 600px) {
+      .page {
+        padding: 16px 16px 28px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .topbar nav a {
+        margin-left: 12px;
+        font-size: 13px;
+      }
+
+      .modal-panel {
+        padding: 16px 16px 20px;
+      }
+    }
+
+.info-section {
+  margin-top: 40px;
+  padding: 24px 28px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.info-section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(160, 90, 255, 0.28);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.info-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #a05aff;
+}
+
+.info-body {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #555;
+}
+
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- 상단 헤더 -->
+    <header class="topbar">
+      <div class="brand">RyuJae Oracle <span>by 작가</span></div>
+      <nav>
+        <!-- 같은 페이지 섹션으로 스크롤 -->
+        <a href="#reading-section">카드 리딩</a>
+        <a href="#about-deck">카드 소개</a>
+        <!-- 🔗 외부 페이지: 아래 URL을 네가 원하는 주소로 바꿔 쓰면 됨 -->
+        <a href="https://example.com" target="_blank" rel="noopener noreferrer">About</a>
+      </nav>
+    </header>
+
+<header class="topbar">
+  ...
+</header>
+
+<div class="top-divider"></div>
+
+    <main id="reading-section">
+      <h1>류제's 오라클 카드 리딩</h1>
+      <p class="subtitle">
+        스프레드를 선택하고 카드를 뽑으세요. 카드 위에 마우스를 올리거나 카드를 클릭하면 상세 리딩이 나타납니다.
+      </p>
+
+      <div class="controls">
+        <button class="btn secondary active" id="one-card-btn">1장 리딩</button>
+        <button class="btn secondary" id="three-card-btn">3장 스프레드</button>
+        <button class="btn" id="draw-btn">카드 뽑기</button>
+      </div>
+
+      <div class="status-line" id="status-line"></div>
+
+      <div class="cards-container" id="cards-container"></div>
+
+      <p class="footer-note">
+        * 이 페이지는 로컬 파일로도, 웹에 올려서도 사용할 수 있습니다. 카드 데이터와 이미지는
+        <code>cards</code> 배열과 <code>images</code> 폴더에서 자유롭게 수정하세요.
+      </p>
+    </main>
+
+    <!-- 카드/덱 소개 섹션 -->
+    <section id="about-deck" class="info-section">
+  <div class="info-title">카드 소개</div>
+  <div class="info-body">
+    이 오라클 카드는 류제가 구축한 세계관과 상징 체계를 바탕으로 한 개인 창작 덱입니다.<br>
+    각 카드는 하나의 장면과 감정을 응축해 놓은 작은 이야기이며, 리딩을 통해
+    지금의 당신에게 필요한 문장과 이미지를 불러옵니다.<br>
+    상업적 이미지 무단 사용 및 2차 배포는 금지되어 있으며, 웹앱을 통한 리딩 사용만 허용됩니다.
+  </div>
+</section>
+
+<section id="about-author" class="info-section">
+  <div class="info-title">About 작가</div>
+  <div class="info-body">
+    웹소설과 오라클 리딩을 함께 짓는 사람. 이야기를 카드의 이미지와 언어로 풀어내는 작업을 좋아합니다.<br>
+    이 웹앱은 작가가 직접 기획 · 텍스트 작성 · 카드 리딩 설계를 모두 진행한 1인 프로젝트입니다.
+  </div>
+</section>
+
+   
+    <footer class="footer">
+      © 2025 RyuJae Oracle. All rights reserved. Designed & Built by 작가.
+    </footer>
+  </div>
+
+  <!-- 카드 상세 모달 -->
+  <div class="modal" id="card-modal">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-panel">
+      <button class="modal-close" id="modal-close">&times;</button>
+      <div class="modal-image-wrapper">
+        <img id="modal-image" src="" alt="" />
+      </div>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-keyword" id="modal-keyword"></div>
+      <div class="modal-position" id="modal-position"></div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    // -----------------------------
+    // 카드 데이터
+    // -----------------------------
+    const cards = [
+      {
+        id: "guardian_angel",
+        name: "Guardian Angel",
+        keyword: "Guidance in times to come.",
+        image: "images/guardian_angel.png",
+        longMeaning:
+          "앞으로 나아갈 길 위에서 보이지 않는 보호가 함께 함을 알려주는 카드입니다. 조급함보다는 신뢰를, 불안보다는 호흡을 선택하세요. 지금 이 길 위에서 당신은 혼자가 아닙니다.",
+        positionLabels: {
+          past: "과거의 보호와 경험",
+          present: "현재 곁을 지키는 안내자",
+          future: "다가올 길에 대한 인도"
+        }
+      },
+      {
+        id: "crown_chakra",
+        name: "Crown Chakra",
+        keyword: "Future spiritual growth and enlightenment.",
+        image: "images/crown_chakra.png",
+        longMeaning:
+          "의식이 한 단계 확장되는 시기를 맞이하고 있습니다. 떠오르는 영감과 직관을 가볍게 넘기지 마세요. 같은 상황도 이전과 전혀 다른 시선으로 보이기 시작할 수 있습니다.",
+        positionLabels: {
+          past: "잠재된 영적 감수성",
+          present: "지금 깨어나는 통찰",
+          future: "한층 넓어진 시야와 수용성"
+        }
+      },
+      {
+        id: "root_chakra",
+        name: "Root Chakra",
+        keyword: "Maintaining security in the future.",
+        image: "images/root_chakra.png",
+        longMeaning:
+          "생활의 기반, 몸의 안정, 돈과 집과 같은 현실적인 토대가 중심 이슈로 떠오릅니다. 작은 루틴부터 정리해 보세요. 단단한 땅을 만든 뒤에야 자유로운 비상이 가능합니다.",
+        positionLabels: {
+          past: "과거의 불안과 흔들림",
+          present: "지금 바로 잡아야 할 기초",
+          future: "더 이상 흔들리지 않는 기반"
+        }
+      },
+      {
+        id: "magician",
+        name: "The Magician",
+        keyword: "Realizing potential in upcoming endeavors.",
+        image: "images/magician.png",
+        longMeaning:
+          "당신이 가진 재능과 자원이 실제 현실에 작동하기 시작하는 시점입니다. 머릿속에서만 맴돌던 아이디어를 손으로 끌어내려 보세요. 도구는 이미 당신 곁에 충분히 있습니다.",
+        positionLabels: {
+          past: "잠재된 재능과 준비",
+          present: "지금 행동으로 옮길 때",
+          future: "현실로 구현된 비전"
+        }
+      },
+      {
+        id: "butterfly_spirit",
+        name: "Butterfly Spirit",
+        keyword: "Imminent major transformation.",
+        image: "images/butterfly_spirit.png",
+        longMeaning:
+          "변화는 이미 시작되었습니다. 예전의 나로는 들어갈 수 없는 문이 열리고 있습니다. 낡은 껍질을 벗겨내는 과정이 조금 아프더라도, 그 너머에는 훨씬 가벼운 날갯짓이 기다리고 있습니다.",
+        positionLabels: {
+          past: "오랜 준비와 누적된 압박",
+          present: "지금 일어나는 탈피의 순간",
+          future: "새로운 형태의 당신"
+        }
+      }
+    ];
+
+    // -----------------------------
+    // 상태 & DOM
+    // -----------------------------
+    let currentSpread = 1; // 1 또는 3
+
+    const oneCardBtn   = document.getElementById("one-card-btn");
+    const threeCardBtn = document.getElementById("three-card-btn");
+    const drawBtn      = document.getElementById("draw-btn");
+    const cardsContainer = document.getElementById("cards-container");
+    const statusLine     = document.getElementById("status-line");
+
+    // 모달 요소
+    const modal          = document.getElementById("card-modal");
+    const modalBackdrop  = document.getElementById("modal-backdrop");
+    const modalClose     = document.getElementById("modal-close");
+    const modalTitle     = document.getElementById("modal-title");
+    const modalKeyword   = document.getElementById("modal-keyword");
+    const modalPosition  = document.getElementById("modal-position");
+    const modalBody      = document.getElementById("modal-body");
+    const modalImage     = document.getElementById("modal-image");
+
+    const defaultPositions = ["과거", "현재", "미래"];
+
+    // -----------------------------
+    // 유틸: 셔플 & 뽑기
+    // -----------------------------
+    function shuffleArray(array) {
+      const arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function drawRandomCards(count) {
+      const shuffled = shuffleArray(cards);
+      return shuffled.slice(0, count);
+    }
+
+    // -----------------------------
+    // 모달 열기 / 닫기
+    // -----------------------------
+    function openModal(card, positionText) {
+      modalTitle.textContent = card.name;
+      modalKeyword.textContent = card.keyword;
+      modalPosition.textContent = positionText || "";
+      modalBody.textContent = card.longMeaning;
+      modalImage.src = card.image;
+      modalImage.alt = card.name;
+      modal.classList.add("show");
+    }
+
+    function closeModal() {
+      modal.classList.remove("show");
+    }
+
+    modalClose.addEventListener("click", closeModal);
+    modalBackdrop.addEventListener("click", closeModal);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeModal();
+      }
+    });
+
+    // -----------------------------
+    // 렌더링
+    // -----------------------------
+    function renderCards(selectedCards) {
+      cardsContainer.innerHTML = "";
+
+      selectedCards.forEach((card, index) => {
+        const cardEl = document.createElement("div");
+        cardEl.className = "card";
+
+        const imageWrapper = document.createElement("div");
+        imageWrapper.className = "card-image-wrapper";
+
+        const img = document.createElement("img");
+        img.src = card.image;
+        img.alt = card.name;
+
+        const overlay = document.createElement("div");
+        overlay.className = "card-overlay";
+
+        const overlayInner = document.createElement("div");
+        overlayInner.className = "card-overlay-inner";
+        overlayInner.textContent = card.longMeaning;
+
+        overlay.appendChild(overlayInner);
+        imageWrapper.appendChild(img);
+        imageWrapper.appendChild(overlay);
+
+        const title = document.createElement("div");
+        title.className = "card-title";
+        title.textContent = card.name;
+
+        const keyword = document.createElement("div");
+        keyword.className = "card-keyword";
+        keyword.textContent = card.keyword;
+
+        const position = document.createElement("div");
+        position.className = "card-position";
+
+        let positionLabelText = "";
+
+        if (currentSpread === 3) {
+          const key =
+            index === 0 ? "past" : index === 1 ? "present" : "future";
+          const labelFromCard = card.positionLabels?.[key];
+          const defaultLabel = defaultPositions[index];
+          positionLabelText = labelFromCard
+            ? `${defaultLabel} · ${labelFromCard}`
+            : defaultLabel;
+          position.textContent = positionLabelText;
+        }
+
+        cardEl.appendChild(imageWrapper);
+        cardEl.appendChild(title);
+        cardEl.appendChild(keyword);
+        if (positionLabelText) {
+          cardEl.appendChild(position);
+        }
+
+        // 카드 클릭 시 모달 열기
+        cardEl.addEventListener("click", () => {
+          openModal(card, positionLabelText);
+        });
+
+        cardsContainer.appendChild(cardEl);
+      });
+    }
+
+    // -----------------------------
+    // 버튼 동작
+    // -----------------------------
+    oneCardBtn.addEventListener("click", () => {
+      currentSpread = 1;
+      oneCardBtn.classList.add("active");
+      threeCardBtn.classList.remove("active");
+      statusLine.textContent =
+        "1장 리딩을 선택했습니다. 카드 뽑기를 눌러 주세요.";
+    });
+
+    threeCardBtn.addEventListener("click", () => {
+      currentSpread = 3;
+      threeCardBtn.classList.add("active");
+      oneCardBtn.classList.remove("active");
+      statusLine.textContent =
+        "3장 스프레드를 선택했습니다. 카드 뽑기를 눌러 주세요.";
+    });
+
+    drawBtn.addEventListener("click", () => {
+      const count = currentSpread === 3 ? 3 : 1;
+
+      if (cards.length < count) {
+        alert(`카드 데이터가 ${count}장보다 적습니다. cards 배열을 더 채워 주세요.`);
+        return;
+      }
+
+      const selected = drawRandomCards(count);
+      renderCards(selected);
+
+      if (currentSpread === 1) {
+        statusLine.textContent =
+          "1장 리딩 결과입니다. 카드 위에 마우스를 올리거나 클릭해 상세 리딩을 확인하세요.";
+      } else {
+        statusLine.textContent =
+          "3장 스프레드 결과입니다. 각 카드 위에 마우스를 올리거나 클릭해 상세 리딩을 확인하세요.";
+      }
+    });
+
+    // 초기 안내
+    statusLine.textContent =
+      "기본으로 1장 리딩이 선택되어 있습니다. 카드 뽑기를 눌러 시작해 보세요.";
+
+// -----------------------------
+    // 기본 마우스 동작 제한 (우클릭, 드래그, 텍스트 선택)
+    // -----------------------------
+    document.addEventListener("contextmenu", function (e) {
+      e.preventDefault();          // 우클릭 메뉴 막기
+    });
+
+    document.addEventListener("dragstart", function (e) {
+      e.preventDefault();          // 드래그 시작 막기
+    });
+
+    document.addEventListener("selectstart", function (e) {
+      e.preventDefault();          // 텍스트 블록 잡기 막기
+    });
+  </script>
+</body>
+</html>
